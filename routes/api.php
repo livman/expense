@@ -37,5 +37,7 @@ Route::group(array('prefix' => 'api/v1/expense'), function()
 });
 */
 
-Route::post('expense/add', 'ExpenseController@add');
+Route::post('add', 'ExpenseController@add');
+
+Route::get('get/{option}/{value}', 'ExpenseController@get');
 

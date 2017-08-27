@@ -30,7 +30,7 @@ class Expense extends Model
         }
 
         $this->title = $data['title'];
-        $this->description = '-';
+        $this->description = $data['description'];
         $this->spend = $data['spend'];
         $this->currency = $data['currency'];
         $this->created_at = date('Y-m-d H:i:s');
