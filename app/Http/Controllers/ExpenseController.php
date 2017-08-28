@@ -42,7 +42,29 @@ class ExpenseController extends Controller
         $option = $request->option;
         $value = $request->value;
         $expense = new Expense;
-        print_r($expense->get()->sum('spend'));
+
+        try {
+
+            $expense_total = $expense->where('user_id', 1)->sum('spend');
+            return response()->json([
+                'success' => true,
+                'message' => 'Result OK',
+                'data' => array(
+                    'expense' => array('total' => $expense_total)
+                )
+            ], 200 );
+
+        } catch (Exception $e) {
+
+            return array(
+                'success' => false,
+                'header' => array('code' => 500),
+                'message' => $e->getMessage()
+            );
+        }
+
+
+
 
     }
 
