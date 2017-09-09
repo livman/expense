@@ -13,7 +13,19 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::group(['prefix' => 'v1', 'middleware' => 'auth:api'], function() {
+    
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 
+    Route::post('/add', 'ExpenseController@add');
+    
+    Route::get('/get/{option?}/{value?}', 'ExpenseController@get');
+
+});
+
+/*
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -22,11 +34,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::get('/users/{user}', function (App\User $user) {
     return $user->email;
 });
+*/
 
-
+/*
 Route::get('test', function () {
     print_r('Hello world');
 });
+*/
 
 /*
 Route::group(array('prefix' => 'api/v1/expense'), function()
@@ -37,7 +51,8 @@ Route::group(array('prefix' => 'api/v1/expense'), function()
 });
 */
 
+/*
 Route::post('add', 'ExpenseController@add');
 
 Route::get('get/{option}/{value}', 'ExpenseController@get');
-
+*/

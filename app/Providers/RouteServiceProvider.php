@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Laravel\Passport\Passport;
+
 use Illuminate\Routing\Router;
 use Illuminate\Http\Request;
 
@@ -45,6 +47,8 @@ class RouteServiceProvider extends ServiceProvider
         $this->mapApiRoutes();
 
         $this->mapWebRoutes();
+
+        Passport::routes();
 
         //
     }

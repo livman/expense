@@ -28,6 +28,7 @@ class ExpenseController extends Controller
     public function add(Request $request)
     {
         $data = $request->json()->all();
+        $data['user_id'] = $request->user()->id;
         $expense = new Expense;
         $res = $expense->add($data);
 
