@@ -11,19 +11,23 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Mockery\CountValidator\Exception;
 
+
+
 class ExpenseController extends Controller
 {
 
     /**
-     * Add expense to table
+     * Add expense
      *
      * input document raw json
      *    {
-     *      "title": "string",
+     *      "title":       "string",
      *      "description": "string",
-     *      "spend": float,
-     *      "currency": "string"  // type of spend th, en etc.
+     *      "spend":       float,
+     *      "currency":    "string"   [th/en/ etc.]
      *    }
+     * @param  \Illuminate\Http\Request  $request
+     * @return json
      */
     public function add(Request $request)
     {
@@ -38,21 +42,41 @@ class ExpenseController extends Controller
         ], $res['header']['code'] );
     }
 
+    /**
+     * Get expense
+     *
+     * input document raw json
+     *    {
+     *      "start": "datetime",
+     *      "end":   "datetime",
+     *    }
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return json
+     */
     public function get(Request $request)
     {
-        $option = $request->option;
-        $value = $request->value;
         $expense = new Expense;
+
+        $data = $request->json()->all();
+
+        // Retrive user_id from token
+        $user_id = $request->user()->id;
 
         try {
 
-            $expense_total = $expense->where('user_id', 1)->sum('spend');
+            $res = $expense->get( array(
+                'condition' => array(
+                    'start' => $data['start'],
+                    'end' => $data['end']
+                ),
+                'user_id' => $user_id
+            ));
+
             return response()->json([
-                'success' => true,
-                'message' => 'Result OK',
-                'data' => array(
-                    'expense' => array('total' => $expense_total)
-                )
+                'success' => $res['success'],
+                'message' => $res['message'],
+                'data' => $res['data']
             ], 200 );
 
         } catch (Exception $e) {

@@ -21,7 +21,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'auth:api'], function() {
 
     Route::post('/add', 'ExpenseController@add');
     
-    Route::get('/get/{option?}/{value?}', 'ExpenseController@get');
+    Route::post('/get', 'ExpenseController@get');
 
 });
 
