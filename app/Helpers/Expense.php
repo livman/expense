@@ -26,4 +26,24 @@ class Expense
        
     }
 
+    public function iterationExpenseCollection( $expenseCollection )
+    {
+        $total = 0;
+        $tmp = array();
+        foreach($expenseCollection as $item)
+        {
+            $total += floatval($item->_spend);
+
+            $tmp[] = array(
+                'title' => (isset($item->title)) ? $item->title : '',
+                'description' => (isset($item->description)) ? $item->description : '',
+                'spend' => number_format($item->_spend, 2),
+                'time_period' => $item->_period
+            );
+
+        }
+
+        return array('item' => $tmp, 'total' => number_format($total, 2));
+    }
+
 }

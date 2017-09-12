@@ -47,20 +47,24 @@ class ExpenseController extends Controller
      *
      * input document raw json
      *    {
-     *      "start": "datetime",
-     *      "end":   "datetime",
+     *      "list_item":  boolean,
+     *      "group_by" :  "string" [d/m/y]
+     *      "page"     :  int
+     *      "limit"    :  int
+     *      "start"    : "datetime",
+     *      "end":     : "datetime",
      *    }
      *
      * @param  \Illuminate\Http\Request  $request
      * @return json
      */
-    public function get(Request $request)
+    public function get( Request $request )
     {
         $expense = new Expense;
 
         $data = $request->json()->all();
 
-        // Retrive user_id from token
+        // retrieve user_id from token
         $user_id = $request->user()->id;
 
         try {
@@ -70,6 +74,10 @@ class ExpenseController extends Controller
                     'start' => $data['start'],
                     'end' => $data['end']
                 ),
+                'list_item' => $data['list_item'],
+                'group_by' => $data['group_by'],
+                'limit' => $data['limit'],
+                'page' => $data['page'],
                 'user_id' => $user_id
             ));
 
@@ -87,10 +95,6 @@ class ExpenseController extends Controller
                 'message' => $e->getMessage()
             );
         }
-
-
-
-
     }
 
 

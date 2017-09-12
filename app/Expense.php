@@ -5,6 +5,8 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use App\Helpers\Utils;
 //use App\Helpers\Expense;
+use Carbon\Carbon;
+use DB;
 
 class Expense extends Model
 {
@@ -73,6 +75,26 @@ class Expense extends Model
 
     }
 
+    protected function getExpenseCollection( $user_id, $from, $to )
+    {
+        return $this->where('user_id', $user_id)->whereBetween('created_at', array($from, $to));
+    }
+
+    protected function _groupBy( $expenseCollection, $condition = '' )
+    {
+        return $expenseCollection->groupBy(DB::raw($condition));
+    }
+
+    protected function _select( $expenseCollection, $condition = array() )
+    {
+        return $expenseCollection->selectRaw(implode(',', $condition));
+    }
+
+    protected function _orderBy( $expenseCollection, $field = '', $by = '' )
+    {
+        return $expenseCollection->orderBy($field, $by);
+    }
+
     /**
      * Get expense data
      *
@@ -85,9 +107,62 @@ class Expense extends Model
         $from = $this->expenseHelper->validDateTimeFormat($data['condition']['start']);
         $to = $this->expenseHelper->validDateTimeFormat($data['condition']['end'], 1);
 
-        try {
 
-            $res = $this->where('user_id', $data['user_id'])->whereBetween('created_at', array($from, $to))->sum('spend');
+        $limit = $data['limit'];
+        $page = $data['page'];
+
+        try {
+            // Get core collection expense
+            $query = $this->getExpenseCollection($data['user_id'], $from, $to);
+
+            $count_row = $query->count();
+
+            $offset =  $limit * ($page - 1);
+            $total_page = ceil($count_row / $limit);
+
+
+            $return_data = array();
+
+            if ( $data['list_item'] == false )
+            {
+                $return_data['total'] = number_format($query->sum('spend'), 2);
+                $return_data['item'] = array();
+            }
+            else
+            {
+                switch ($data['group_by'])
+                {
+                    case 'y':
+                        // grouping by years
+                        $query = $this->_groupBy($query, 'YEAR(created_at)');
+                        $query = $this->_select($query, array('sum(spend) as _spend', 'YEAR(created_at) as _period'));
+                        $query = $this->_orderBy($query, '_period', 'ASC');
+                        break;
+                    case 'm':
+                        // grouping by months
+                        $query = $this->_groupBy($query, 'DATE_FORMAT(created_at, "%Y-%m")');
+                        $query = $this->_select($query, array('sum(spend) as _spend', 'DATE_FORMAT(created_at, "%Y-%m") as _period'));
+                        $query = $this->_orderBy($query, '_period', 'ASC');
+                        break;
+                    case 'd':
+                        // grouping by date
+                        $query = $this->_groupBy($query, 'DATE_FORMAT(created_at, "%Y-%m-%d")');
+                        $query = $this->_select($query, array('sum(spend) as _spend', 'DATE_FORMAT(created_at, "%Y-%m-%d") as _period'));
+                        $query = $this->_orderBy($query, '_period', 'ASC');
+                        break;
+                    default:
+                        // get all
+                        $query = $this->_select($query, array('title', 'description', 'spend as _spend', 'created_at as _period'));
+                        $query = $this->_orderBy($query, '_period', 'ASC');
+                }
+
+                // Paging data
+                $query->offset($offset);
+                $query->limit($limit);
+
+                $return_data = $this->expenseHelper->iterationExpenseCollection($query->get());
+
+            }
 
             return array(
                 'success' => true,
@@ -95,10 +170,18 @@ class Expense extends Model
                 'message' => 'Result OK',
                 'data' => array(
                     'expense' => array(
-                        'total' => $res,
+                        'list_item' => $data['list_item'],
+                        'group_by' => $data['group_by'],
                         'period_time' => array(
                             'start' => $from,
                             'end' => $to
+                        ),
+                        'item' => $return_data['item'],
+                        'total_spend' => $return_data['total'],
+                        'paging' => array(
+                            'index' => $page,
+                            'item_per_page' => $limit,
+                            'total' => $total_page
                         )
                     )
                 )

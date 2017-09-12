@@ -23,6 +23,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'auth:api'], function() {
     
     Route::post('/get', 'ExpenseController@get');
 
+    //Route::post('/get/detail/{page?}', 'ExpenseController@getDetail');
+
 });
 
 /*
