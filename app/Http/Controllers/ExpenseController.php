@@ -67,8 +67,13 @@ class ExpenseController extends Controller
         // retrieve user_id from token
         $user_id = $request->user()->id;
 
+        $data['user_id'] = $user_id;
+
         try {
 
+            $res = $expense->get($data);
+
+            /*
             $res = $expense->get( array(
                 'condition' => array(
                     'start' => $data['start'],
@@ -80,12 +85,13 @@ class ExpenseController extends Controller
                 'page' => $data['page'],
                 'user_id' => $user_id
             ));
+            */
 
             return response()->json([
                 'success' => $res['success'],
                 'message' => $res['message'],
                 'data' => $res['data']
-            ], 200 );
+            ], $res['header']['code'] );
 
         } catch (Exception $e) {
 

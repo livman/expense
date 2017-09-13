@@ -98,34 +98,46 @@ class Expense extends Model
     /**
      * Get expense data
      *
-     * @param  array  $data
+     * @param  array  $input_data
      * @return array
      */
-    public function get( $data = array() )
+    public function get( $input_data = array() )
     {
+
+        $retFilter = $this->expenseHelper->filterInputGetExpense($input_data);
+
+        if( !$retFilter['result'] )
+        {
+            return array(
+                'success' => false,
+                'header' => array('code' => 422),
+                'data' => array(),
+                'message' => $retFilter['message']
+            );
+        }
+
         // prepare datetime format
-        $from = $this->expenseHelper->validDateTimeFormat($data['condition']['start']);
-        $to = $this->expenseHelper->validDateTimeFormat($data['condition']['end'], 1);
+        $from = $this->expenseHelper->validDateTimeFormat($input_data['start']);
+        $to = $this->expenseHelper->validDateTimeFormat($input_data['end'], 1);
 
+        $data = $retFilter['data'];
 
+        // init data
         $limit = $data['limit'];
         $page = $data['page'];
+        $total_rows = 0;
+        $total_spend = 0;
 
         try {
             // Get core collection expense
             $query = $this->getExpenseCollection($data['user_id'], $from, $to);
-
-            $count_row = $query->count();
-
-            $offset =  $limit * ($page - 1);
-            $total_page = ceil($count_row / $limit);
 
 
             $return_data = array();
 
             if ( $data['list_item'] == false )
             {
-                $return_data['total'] = number_format($query->sum('spend'), 2);
+                $total_spend = number_format($query->sum('spend'), 2);
                 $return_data['item'] = array();
             }
             else
@@ -156,10 +168,19 @@ class Expense extends Model
                         $query = $this->_orderBy($query, '_period', 'ASC');
                 }
 
+
+                // Get row_total & total_spend
+                $retTotal = $this->expenseHelper->iterationExpenseCollection($query->get());
+                $total_rows = $retTotal['total_rows'];
+                $total_spend = $retTotal['total_spend'];
+                //$total_page = ceil($total_rows / $limit);
+
                 // Paging data
+                $offset =  $limit * ($page - 1);
                 $query->offset($offset);
                 $query->limit($limit);
 
+                // Get item to response
                 $return_data = $this->expenseHelper->iterationExpenseCollection($query->get());
 
             }
@@ -177,11 +198,11 @@ class Expense extends Model
                             'end' => $to
                         ),
                         'item' => $return_data['item'],
-                        'total_spend' => $return_data['total'],
+                        'total_spend' => $total_spend,
                         'paging' => array(
                             'index' => $page,
                             'item_per_page' => $limit,
-                            'total' => $total_page
+                            'total_rows' => $total_rows
                         )
                     )
                 )
