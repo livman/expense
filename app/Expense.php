@@ -34,19 +34,23 @@ class Expense extends Model
     /**
      * Add expense to table
      *
-     * @param  array  $data
+     * @param  array  $input_data
      * @return array  
      */
-    public function add( $data = array() )
+    public function add( $input_data = array() )
     {
-        if( count($data) <= 0 )
+        $retFilter = $this->expenseHelper->filterInputAddExpense($input_data);
+
+        if( !$retFilter['result'] )
         {
             return array(
                 'success' => false,
                 'header' => array('code' => 422),
-                'message' => 'Wrong Input Data'
+                'message' => $retFilter['message']
             );
         }
+
+        $data = $retFilter['data'];
 
         $this->user_id = $data['user_id'];
         $this->title = $data['title'];
@@ -62,7 +66,7 @@ class Expense extends Model
             return array(
                 'success' => true,
                 'header' => array('code' => 200),
-                'message' => 'Add Expense Already'
+                'message' => 'add_expense_already'
             );
         } catch (Exception $e) {
 
@@ -188,7 +192,7 @@ class Expense extends Model
             return array(
                 'success' => true,
                 'header' => array('code' => 200),
-                'message' => 'Result OK',
+                'message' => 'result_ok',
                 'data' => array(
                     'expense' => array(
                         'list_item' => $data['list_item'],

@@ -73,20 +73,6 @@ class ExpenseController extends Controller
 
             $res = $expense->get($data);
 
-            /*
-            $res = $expense->get( array(
-                'condition' => array(
-                    'start' => $data['start'],
-                    'end' => $data['end']
-                ),
-                'list_item' => $data['list_item'],
-                'group_by' => $data['group_by'],
-                'limit' => $data['limit'],
-                'page' => $data['page'],
-                'user_id' => $user_id
-            ));
-            */
-
             return response()->json([
                 'success' => $res['success'],
                 'message' => $res['message'],
