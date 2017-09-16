@@ -24,17 +24,19 @@ class getExpense extends TestCase
     }
     */
 
+    
     public function testFilterFieldNormalInputAddExpense()
     {
         $helperExpense = new HelperExpense;
         $input_data = array(
             'user_id' => 1,
             'title' => 'starbuck coffee',
-            'spend' => 200.5
+            'spend' => 200
         );
         $res = $helperExpense->filterInputAddExpense($input_data);
         $this->assertEquals(true, $res['result'], json_encode($res));
     }
+    
 
     public function testFilterFieldSpendIsStringInputAddExpense()
     {

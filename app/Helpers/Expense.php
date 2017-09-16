@@ -52,6 +52,12 @@ class Expense
         return array('item' => $tmp, 'total_spend' => number_format($total, 2), 'total_rows' => $total_row);
     }
 
+    /**
+     * Filter & Valid Input Data befor add expense
+     *
+     * @param  array    $input_data
+     * @return array
+     */
     public function filterInputAddExpense( $input_data = array() )
     {
 
@@ -85,6 +91,13 @@ class Expense
 
     }
 
+    /**
+     * Filter input format by loop prototype with input data
+     *
+     * @param  array    $prototype
+     * @param  array    $input_data
+     * @return array
+     */
     protected function iterationFilterInput( $prototype = array(), $input_data = array() )
     {
         $res['result'] = true;
@@ -156,11 +169,17 @@ class Expense
             // Check double value
             if ( $item['type'] == 'double' )
             {
-                if ( gettype($input_data[$var]) != 'double' )
+                // Convet integer type to float
+                if ( gettype($input_data[$var]) == 'integer' )
+                {
+                    $input_data[$var] = floatval($input_data[$var]);
+                }
+
+                if ( gettype($input_data[$var]) != $item['type'] )
                 {
                     $res['result'] = false;
                     $res['data'] = array();
-                    $res['message'] = 'Param '. $var .' is allow only double value only';
+                    $res['message'] = 'Param '. $var .' is allow only nubmer value only';
                     break;
                 }
             }
@@ -174,7 +193,7 @@ class Expense
 
 
     /**
-     * Filter & Valid Input Data
+     * Filter & Valid Input Data befor get expense
      *
      *
      * @param  array    $input_data
